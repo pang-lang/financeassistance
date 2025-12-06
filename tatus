@@ -1,0 +1,74 @@
+backend/.env.save:1: trailing whitespace.
+[32m+[m[32m# Taggun API Configuration[m[41m[m
+backend/.env.save:2: trailing whitespace.
+[32m+[m[32mTAGGUN_API_KEY=e468807dcc5c488c85aede1767d20b43[m[41m[m
+backend/.env.save:3: trailing whitespace.
+[32m+[m[32mTAGGUN_API_URL=https://api.taggun.io/api/receipt/v1/verbose/file[m[41m[m
+backend/.env.save:4: trailing whitespace.
+[32m+[m[41m[m
+backend/.env.save:5: trailing whitespace.
+[32m+[m[32m# Server Configuration[m[41m[m
+backend/.env.save:6: trailing whitespace.
+[32m+[m[32mAPI_HOST=0.0.0.0[m[41m[m
+backend/.env.save:7: trailing whitespace.
+[32m+[m[32mAPI_PORT=8000[m[41m[m
+backend/.env.save:8: trailing whitespace.
+[32m+[m[32mDEBUG=True[m[41m[m
+backend/.env.save:9: trailing whitespace.
+[32m+[m[41m[m
+backend/.env.save:10: trailing whitespace.
+[32m+[m[32m# CORS Configuration (Frontend URL)[m[41m[m
+backend/.env.save:11: trailing whitespace.
+[32m+[m[32mALLOWED_ORIGINS=http://localhost:4028,http://localhost:3000[m[41m[m
+backend/.env.save:12: trailing whitespace.
+[32m+[m[41m[m
+backend/.env.save:13: trailing whitespace.
+[32m+[m[32m# File Upload Configuration[m[41m[m
+backend/.env.save:14: trailing whitespace.
+[32m+[m[32mMAX_UPLOAD_SIZE=10485760[m[41m[m
+backend/.env.save:15: trailing whitespace.
+[32m+[m[32mALLOWED_FILE_TYPES=image/jpeg,image/png,image/jpg,image/heic,application/pdf[m[41m[m
+backend/.env.save:16: trailing whitespace.
+[32m+[m[41m[m
+backend/.env.save:17: trailing whitespace.
+[32m+[m[32m# Logging[m[41m[m
+backend/.env.save:18: trailing whitespace.
+[32m+[m[41m[m
+backend/.env.save:19: trailing whitespace.
+[32m+[m[32mLOG_LEVEL=INFO[m[41m[m
+backend/.env.save:20: trailing whitespace.
+[32m+[m[41m[m
+backend/.env.save:21: trailing whitespace.
+[32m+[m[32mLOG_LEVEL=INFO[m[41m[m
+backend/.env.save:22: trailing whitespace.
+[32m+[m[41m[m
+backend/.env.save:22: new blank line at EOF.
+backend/config.py:13: trailing whitespace.
+[32m+[m[41m    [m
+backend/config.py:20: trailing whitespace.
+[32m+[m[41m    [m
+backend/config.py:24: trailing whitespace.
+[32m+[m[41m    [m
+backend/config.py:29: trailing whitespace.
+[32m+[m[41m    [m
+backend/config.py:32: trailing whitespace.
+[32m+[m[41m    [m
+backend/config.py:36: trailing whitespace.
+[32m+[m[41m    [m
+backend/config.py:39: trailing whitespace.
+[32m+[m[41m    [m
+backend/config.py:40: trailing whitespace.
+[32m+[m[41m    [m
+backend/config.py:45: trailing whitespace.
+[32m+[m[41m    [m
+backend/models/schemas.py:1: leftover conflict marker
+backend/models/schemas.py:84: leftover conflict marker
+backend/models/schemas.py:117: trailing whitespace.
+[32m+[m[41m    [m
+backend/models/schemas.py:142: trailing whitespace.
+[32m+[m[41m    [m
+backend/models/schemas.py:153: trailing whitespace.
+[32m+[m[41m    [m
+backend/models/schemas.py:164: trailing whitespace.
+[32m+[m[41m    [m
+backend/models/schemas.py:168: leftover conflict marker

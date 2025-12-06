@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import Icon from '@/components/ui/AppIcon';
 import SubscriptionCard from './SubscriptionCard';
@@ -9,12 +9,75 @@ import RenewalAlerts from './RenewalAlerts';
 import SavingsRecommendations from './SavingsRecommendations';
 import AddSubscriptionModal from './AddSubscriptionModal';
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+
 const SubscriptionManagerInteractive = ({ initialData }) => {
-  const [subscriptions, setSubscriptions] = useState(initialData?.subscriptions);
+  const [subscriptions, setSubscriptions] = useState(initialData?.subscriptions || []);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [sortBy, setSortBy] = useState('nextPayment');
   const [filterCategory, setFilterCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  // Fetch subscriptions from API on component mount
+  useEffect(() => {
+    fetchSubscriptions();
+  }, []);
+
+  const fetchSubscriptions = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(`${API_BASE_URL}/subscriptions`);
+      if (response.ok) {
+        const data = await response.json();
+        // Transform backend data to frontend format
+        const transformedSubscriptions = data.map(sub => ({
+          id: `sub-${sub.subscription_id}`,
+          serviceName: sub.service_name,
+          cost: parseFloat(sub.cost),
+          billingFrequency: 'monthly', // Default, can be enhanced later
+          nextPaymentDate: sub.payment_date ? new Date(sub.payment_date).toISOString().split('T')[0] : '',
+          startDate: sub.payment_date ? new Date(sub.payment_date).toISOString().split('T')[0] : '',
+          category: sub.category,
+          description: sub.description || '',
+          icon: getIconForCategory(sub.category),
+          color: getColorForCategory(sub.category),
+          annualCost: parseFloat(sub.cost) * 12 // Default calculation
+        }));
+        setSubscriptions(transformedSubscriptions);
+      }
+    } catch (error) {
+      console.error('Error fetching subscriptions:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getIconForCategory = (category) => {
+    const iconMap = {
+      'Entertainment': 'FilmIcon',
+      'Productivity': 'BriefcaseIcon',
+      'Health & Fitness': 'HeartIcon',
+      'Education': 'AcademicCapIcon',
+      'Shopping': 'ShoppingBagIcon',
+      'Utilities': 'BoltIcon',
+      'Other': 'EllipsisHorizontalCircleIcon'
+    };
+    return iconMap[category] || 'EllipsisHorizontalCircleIcon';
+  };
+
+  const getColorForCategory = (category) => {
+    const colorMap = {
+      'Entertainment': 'bg-red-500',
+      'Productivity': 'bg-blue-500',
+      'Health & Fitness': 'bg-green-500',
+      'Education': 'bg-purple-500',
+      'Shopping': 'bg-pink-500',
+      'Utilities': 'bg-yellow-500',
+      'Other': 'bg-gray-500'
+    };
+    return colorMap[category] || 'bg-gray-500';
+  };
 
   const categories = ['all', 'Entertainment', 'Productivity', 'Health & Fitness', 'Education', 'Shopping', 'Utilities', 'Other'];
 
@@ -77,40 +140,70 @@ const SubscriptionManagerInteractive = ({ initialData }) => {
     };
   }, [subscriptions, upcomingRenewals]);
 
-  const handleAddSubscription = (newSub) => {
-    const iconMap = {
-      'Entertainment': 'FilmIcon',
-      'Productivity': 'BriefcaseIcon',
-      'Health & Fitness': 'HeartIcon',
-      'Education': 'AcademicCapIcon',
-      'Shopping': 'ShoppingBagIcon',
-      'Utilities': 'BoltIcon',
-      'Other': 'EllipsisHorizontalCircleIcon'
-    };
+  const handleAddSubscription = async (newSub) => {
+    try {
+      setLoading(true);
+      // Transform frontend data to backend format
+      const subscriptionData = {
+        service_name: newSub.serviceName,
+        cost: newSub.cost,
+        payment_date: newSub.nextPaymentDate ? new Date(newSub.nextPaymentDate).toISOString() : new Date().toISOString(),
+        category: newSub.category,
+        description: newSub.description || null
+      };
 
-    const colorMap = {
-      'Entertainment': 'bg-red-500',
-      'Productivity': 'bg-blue-500',
-      'Health & Fitness': 'bg-green-500',
-      'Education': 'bg-purple-500',
-      'Shopping': 'bg-pink-500',
-      'Utilities': 'bg-yellow-500',
-      'Other': 'bg-gray-500'
-    };
+      console.log('Sending subscription data:', subscriptionData);
+      console.log('API URL:', `${API_BASE_URL}/subscriptions`);
 
-    const subscription = {
-      id: `sub-${Date.now()}`,
-      ...newSub,
-      icon: iconMap?.[newSub?.category] || 'EllipsisHorizontalCircleIcon',
-      color: colorMap?.[newSub?.category] || 'bg-gray-500',
-      startDate: newSub?.nextPaymentDate,
-      annualCost: newSub?.billingFrequency === 'monthly' ? newSub?.cost * 12 :
-                  newSub?.billingFrequency === 'quarterly' ? newSub?.cost * 4 :
-                  newSub?.cost
-    };
+      const response = await fetch(`${API_BASE_URL}/subscriptions`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(subscriptionData),
+      });
 
-    setSubscriptions(prev => [...prev, subscription]);
-    setIsModalOpen(false);
+      console.log('Response status:', response.status);
+      console.log('Response ok:', response.ok);
+
+      if (response.ok) {
+        const savedSubscription = await response.json();
+        // Transform backend response to frontend format
+        const transformedSubscription = {
+          id: `sub-${savedSubscription.subscription_id}`,
+          serviceName: savedSubscription.service_name,
+          cost: parseFloat(savedSubscription.cost),
+          billingFrequency: newSub.billingFrequency || 'monthly',
+          nextPaymentDate: savedSubscription.payment_date ? new Date(savedSubscription.payment_date).toISOString().split('T')[0] : '',
+          startDate: savedSubscription.payment_date ? new Date(savedSubscription.payment_date).toISOString().split('T')[0] : '',
+          category: savedSubscription.category,
+          description: savedSubscription.description || '',
+          icon: getIconForCategory(savedSubscription.category),
+          color: getColorForCategory(savedSubscription.category),
+          annualCost: newSub.billingFrequency === 'monthly' ? newSub.cost * 12 :
+                      newSub.billingFrequency === 'quarterly' ? newSub.cost * 4 :
+                      newSub.cost
+        };
+
+        setSubscriptions(prev => [...prev, transformedSubscription]);
+        setIsModalOpen(false);
+      } else {
+        let errorMessage = 'Unknown error';
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.detail || errorData.message || JSON.stringify(errorData);
+        } catch (e) {
+          errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+        }
+        console.error('Failed to add subscription:', errorMessage);
+        alert(`Failed to add subscription: ${errorMessage}`);
+      }
+    } catch (error) {
+      console.error('Error adding subscription:', error);
+      alert(`Failed to add subscription: ${error.message || 'Please try again.'}`);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleEditSubscription = (subscription) => {

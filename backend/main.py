@@ -98,7 +98,7 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:3000",
         "http://127.0.0.1:3000",
-        "http://localhost:4028",     # You MUST add this
+        "http://localhost:4028",
         "http://127.0.0.1:4028"
     ],
     allow_credentials=True,
@@ -320,40 +320,6 @@ async def claude_chat_endpoint(request: ChatRequest, db: Session = Depends(get_d
 
     except Exception as e:
         return ChatResponse(reply=f"Error generating Claude response: {str(e)}", contextUsed=False, chunksFound=0)
-
-async def detect_transaction_intent(message: str) -> bool:
-    """
-    Uses Claude to determine whether the user is asking about transaction data.
-    Returns True/False.
-    """
-    try:
-        res = claude_client.messages.create(
-            model="claude-3-haiku-20240307",  # very cheap for classification
-            max_tokens=50,
-            system=(
-                '''
-                You are an intent classifier. Determine ONLY whether the user
-                is asking about their financial transactions (e.g. spending, 
-                expenses, purchase history, amounts spent, categories, dates, etc.)\n
-                Respond with ONLY 'yes' or 'no'. Absolutely no extra words.
-                
-                
-                If user ask about the transaction, uses this as reference, {}
-                If user ask about the subscription, uses this as reference.
-                '''
-                
-                
-
-
-            ),
-            messages=[{"role": "user", "content": message}],
-        )
-
-        reply = res.content[0].text.strip().lower()
-        return reply == "yes"
-
-    except Exception:
-        return False
         
 # Elevenlabs endpoint - Speech to Text
 @app.post("/stt")
@@ -380,86 +346,6 @@ async def speech_to_text(request: Request):
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"STT failed: {e}")
-
-# Endpoint
-@app.post("/public-speaking")
-async def public_speaking_analysis(request: Request):
-    try:
-        # Check if ElevenLabs client is available
-        if elevenlabs_client is None:
-            raise HTTPException(status_code=500, detail="ElevenLabs API key not configured")
-
-        audio_bytes = await request.body()
-
-        if not audio_bytes:
-            raise HTTPException(status_code=400, detail="No audio provided")
-
-        # 1️⃣ Transcribe + Emotion + Prosody (ElevenLabs)
-        stt_result = elevenlabs_client.speech_to_text.convert(
-            file=audio_bytes,
-            model_id="scribe_v1",  # Prosody + Emotion
-            language_code="en"
-        )
-
-        transcript = stt_result.text
-        
-        emotion = getattr(stt_result, "emotion", {})
-        prosody = getattr(stt_result, "prosody", {})
-
-        if not transcript:
-            raise HTTPException(status_code=500, detail="Transcription failed")
-
-        # 2️⃣ Prepare evaluation prompt for Claude
-        system_prompt = """You are an advanced public-speaking evaluator.
-        Analyze the user's speech using BOTH transcript content and voice characteristics.
-
-        Return valid JSON ONLY with:
-        - fluency_score (0-100)
-        - grammar_score (0-100)
-        - clarity_score (0-100)
-        - pronunciation_score (0-100)
-        - confidence_score (0-100)
-        - filler_words (list)
-        - pace_wpm
-        - detected_emotion
-        - suggestions (3-5 bullet points)
-        - final_summary (2-4 sentences)"""
-
-        user_prompt = f"""
-        Transcript:
-        {transcript}
-
-        Voice Emotion:
-        {emotion}
-
-        Prosody (Pitch, Volume, Pace):
-        {prosody}
-        """
-
-        # Check if Claude client is available
-        if claude_client is None:
-            raise HTTPException(status_code=500, detail="Claude API key not configured")
-
-        # 3️Claude LLM Evaluation
-        llm_response = claude_client.messages.create(
-            model="claude-3-haiku-20240307",
-            max_tokens=1024,
-            system=system_prompt,
-            messages=[{"role": "user", "content": user_prompt}],
-            temperature=0.4,
-        )
-
-        evaluation = llm_response.content[0].text
-
-        return {
-            "transcript": transcript,
-            "emotion": emotion,
-            "prosody": prosody,
-            "evaluation": evaluation
-        }
-
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Public Speaking Analysis failed: {e}")
 
 if __name__ == "__main__":
     import uvicorn

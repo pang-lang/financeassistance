@@ -1,0 +1,28 @@
+# FastAPI and server
+fastapi>=0.115.0
+uvicorn[standard]>=0.32.0
+python-multipart>=0.0.6
+
+# HTTP client for Taggun API
+httpx==0.26.0
+aiofiles==23.2.1
+
+# Environment and configuration
+python-dotenv==1.0.0
+pydantic>=2.10.0
+pydantic-settings>=2.6.0
+
+# Image processing
+Pillow>=10.2.0
+
+# CORS middleware
+python-jose[cryptography]==3.3.0
+
+# Logging and monitoring
+structlog==24.1.0
+
+# Testing (optional)
+pytest==7.4.4
+pytest-asyncio==0.23.3
+httpx==0.26.0
+

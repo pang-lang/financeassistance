@@ -1,0 +1,11 @@
+fastapi
+uvicorn
+python-dotenv
+elevenlabs
+anthropic
+Markdown
+beautifulsoup4
+python-multipart
+pytz
+sqlalchemy
+pymysql
